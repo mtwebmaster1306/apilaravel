@@ -11,7 +11,7 @@
 <div class="d-flex justify-content-center ">
     <div class="container row">
         <div class="col">
-            {{-- Contador de Dominios Totales --}}
+            {{-- Contador de Dominios Totales --}} 
             @php
                 $totalDominios = auth()->user()->cliente->dominios()->count();
             @endphp
