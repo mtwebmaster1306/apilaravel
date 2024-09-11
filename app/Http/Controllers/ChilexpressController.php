@@ -9,6 +9,7 @@ class ChilexpressController extends Controller
 {
     private $baseUrl = 'https://testservices.wschilexpress.com';
     private $subscriptionKey = 'c17619e460b847429e8e7d031828c053';
+     private $apikey ='dad6ae9cb40d47d9966bb2cb86e0e6d8';
 
     private function getClient()
     {
@@ -62,24 +63,31 @@ class ChilexpressController extends Controller
     }
 
     // Obtener destinos basados en la región seleccionada
-    public function getDestinations($regionCode)
-    {
-        $response = $this->getClient()->get("{$this->baseUrl}/georeference/api/v1.0/coverage-areas", [
-            'query' => [
-                'RegionCode' => $regionCode,
-                'type' => 0
-            ]
-        ]);
+      public function getDestinations($regionCode)
+{
+    // Datos que se enviarán en la solicitud POST
+    $data = [
+        'RegionCode' => $regionCode,
+        'type' => 0
+    ];
 
-        if ($response->successful()) {
-            $data = $response->json();
-            $sortedCoverageAreas = collect($data['coverageAreas'])->sortBy('countyName')->values();
 
-            return response()->json($sortedCoverageAreas);
-        }
+    $response = $this->getClient()->withHeaders([
+        'Ocp-Apim-Subscription-Key' => $this->apikey,
+        'Content-Type' => 'application/json'
+    ])->get("{$this->baseUrl}/georeference/api/v1.0/coverage-areas", $data);
 
-        return response()->json(['error' => 'No se pudieron cargar los destinos.'], $response->status());
+    if ($response->successful()) {
+        $data = $response->json();
+        $sortedCoverageAreas = collect($data['coverageAreas'])->sortBy('countyName')->values();
+
+        return response()->json($sortedCoverageAreas);
     }
+
+    return response()->json(['error' => 'No se pudieron cargar los destinos.'], $response->status());
+}
+
+    
 
     // Calcular envío
     public function calculateShipment(Request $request)
